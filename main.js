@@ -30,7 +30,7 @@ const telegram = new Telegram(tokenTelegram)
 
 
 const openai = new OpenAI({
-    apiKey: openAiKey, // defaults to process.env["OPENAI_API_KEY"]
+    apiKey: "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", // defaults to process.env["OPENAI_API_KEY"]
 });
 
 
