@@ -1,16 +1,37 @@
+const OpenAI = require("openai")
 require("dotenv").config()
 const Insta = require('./insta.js');
+const {Telegram} = require('telegraf')
 const client = new Insta.Client();
 
+//Регулярные вырожение
 
+const regex = /#(курс java|курс frontend|курс project managment|курс прожект менеджер|курс cyber security|курс cybersecurity|курс кибер безопасность|курс кибербезопасность|пробный java|пробный frontend|пробный project managment|пробный прожект менеджер|пробный cyber security|пробный cybersecurity|пробный кибер безопасность|пробный кибербезопасностькурс java|курсfrontend|курсproject managment|курспрожект менеджер|курсcyber security|курсcybersecurity|курскибер безопасность|курскибербезопасность|пробныйjava|пробныйfrontend|пробныйproject managment|пробныйпрожект менеджер|пробныйcyber security|пробныйcybersecurity|пробныйкибер безопасность|пробныйкибербезопасность)/i;
+const phoneRegex = /(\+?\d{0,4}\s?\d{3,4}\s?\d{3}\s?\d{3})/g;
+const dateRegex = /(\d{2}.\d{2}.\d{4})/;
+const fullNameRegex = /([А-Я][а-я]+)(?: ([А-Я][а-я]+))(?: ([А-Я][а-я]+))?/;
+
+const openAiKey = process.env.OPENAI_API_KEY
 const userName = process.env.INSTA_USERNAME
 const password = process.env.INSTA_PASSWORD
 
+const tokenTelegram = process.env.TELEGRAM_BOT
 
 const chatId = process.env.TELEGRAM_CHAT
 const eldiar = "5459597601"
 const manas = "516481288"
 const manas2 = "5049470276"
+
+const chatIds = [manas, eldiar]; // Список чатов для отправки сообщений
+let currentChatIndex = 0;
+
+
+const telegram = new Telegram(tokenTelegram)
+
+
+const openai = new OpenAI({
+    apiKey: openAiKey, // defaults to process.env["OPENAI_API_KEY"]
+});
 
 
 const text = `Вы представляетесь как IT аутсорс-компания "Fortylines IO," обладающая тремя годами опыта в предоставлении высококачественных технологических решений для бизнеса. В рамках вашей деятельности вы предоставляете "40Devs" - авторские курсы в различных направлениях, таких как Java, Frontend, Project Management и Cyber Security. Эти курсы разработаны командой опытных специалистов, всегда находящихся в курсе последних технологических тенденций, что гарантирует студентам получение актуальных и востребованных знаний, применимых в реальной практике.
@@ -63,7 +84,16 @@ client.on('messageCreate', async (message,) => {
 
     if (message.author.id === client.user.id) return;
 
+    if (message.content.toLowerCase().match(regex) &&
+        message.content.toLowerCase().match(phoneRegex) &&
+        message.content.toLowerCase().match(dateRegex) ||
+        message.content.toLowerCase().match(fullNameRegex)) {
+        // Определяем следующий чат для отправки сообщения
+        // const currentChatId = chatIds[currentChatIndex];
+        // currentChatIndex = (currentChatIndex + 1) % chatIds.length; // Переход к следующему чату
 
+        telegram.sendMessage(chatId, message.content);
+    }
 
     await message.markSeen();
     console.log(`${client.user.username} Is Ready Now For Chats`);
@@ -71,13 +101,15 @@ client.on('messageCreate', async (message,) => {
     try {
         console.log(message.content)
         await message.chat.startTyping({duration: 500000, disableOnSend: true})
-        await message.chat.sendMessage(message.content)
+        const chatCompletion = await openai.chat.completions.create({
+            messages: [{role: 'system', content: text}, {role: 'user', content: message.content}],
+            model: 'gpt-3.5-turbo',
+        });
         await message.chat.stopTyping()
-
+        await message.chat.sendMessage(chatCompletion.choices[0]?.message?.content);
+        await console.log(chatCompletion.choices[0]?.message?.content)
     } catch (error) {
-        console.error('An error occurred:', error);
         await message.chat.sendMessage("Повторите ваш запрос");
-
     }
 });
 
