@@ -101,14 +101,18 @@ client.on('messageCreate', async (message,) => {
     try {
         console.log(message.content)
         await message.chat.startTyping({duration: 500000, disableOnSend: true})
+
         const chatCompletion = await openai.chat.completions.create({
             messages: [{role: 'system', content: text}, {role: 'user', content: message.content}],
             model: 'gpt-3.5-turbo',
         });
+
         await message.chat.stopTyping()
+
         await message.chat.sendMessage(chatCompletion.choices[0]?.message?.content);
         await console.log(chatCompletion.choices[0]?.message?.content)
     } catch (error) {
+        console.log(error)
         await message.chat.sendMessage("Повторите ваш запрос");
     }
 });
