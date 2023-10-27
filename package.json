@@ -4,13 +4,13 @@
   "description": "instagram chatbot by venomexe",
   "main": "main.js",
   "scripts": {
-    "run": "node main.js",
+    "dev": "node main.js",
     "start": "node main.js"
   },
   "author": "venom-exe",
   "license": "GNU",
   "dependencies": {
     "@androz2091/insta.js": "^1.6.1",
-    "node-fetch": "^2.6.0"
+    "dotenv": "^16.3.1"
   }
 }
